@@ -1,0 +1,335 @@
+前言
+在web开发过程中涉及到表格时，例如dataTable，就会产生分页的需求，通常我们将分页方式分为两种：前端分页和后端分页。
+
+前端分页
+
+一次性请求数据表格中的所有记录(ajax)，然后在前端缓存并且计算count和分页逻辑，一般前端组件(例如dataTable)会提供分页动作。
+
+特点是：简单，很适合小规模的web平台；当数据量大的时候会产生性能问题，在查询和网络传输的时间会很长。
+
+后端分页
+
+在ajax请求中指定页码(pageNum)和每页的大小(pageSize)，后端查询出当页的数据返回，前端只负责渲染。
+
+特点是：复杂一些；性能瓶颈在MySQL的查询性能，这个当然可以调优解决。一般来说，web开发使用的是这种方式。
+
+我们说的也是后端分页。
+
+ 
+
+MySQL对分页的支持
+简单来说MySQL对分页的支持是通过limit子句。请看下面的例子。
+
+复制代码
+limit关键字的用法是
+LIMIT [offset,] rows
+offset是相对于首行的偏移量(首行是0)，rows是返回条数。
+
+# 每页10条记录，取第一页，返回的是前10条记录
+select * from tableA limit 0,10;
+# 每页10条记录，取第二页，返回的是第11条记录，到第20条记录，
+select * from tableA limit 10,10;
+复制代码
+这里提一嘴的是，MySQL在处理分页的时候是这样的：
+
+limit 1000,10 - 过滤出1010条数据，然后丢弃前1000条，保留10条。当偏移量大的时候，性能会有所下降。
+
+limit 100000,10 - 会过滤10w+10条数据，然后丢弃前10w条。如果在分页中发现了性能问题，可以根据这个思路调优。
+
+ 
+
+Mybatis分页插件PageHelper
+在使用Java Spring开发的时候，Mybatis算是对数据库操作的利器了。不过在处理分页的时候，Mybatis并没有什么特别的方法，一般需要自己去写limit子句实现，成本较高。好在有个PageHelper插件。
+
+1、POM依赖
+
+Mybatis的配置就不多提了。PageHelper的依赖如下。需要新的版本可以去maven上自行选择
+
+<dependency>
+     <groupId>com.github.pagehelper</groupId>
+     <artifactId>pagehelper</artifactId>
+     <version>4.1.4</version>
+ </dependency>
+ 
+
+2、Mybatis对PageHelper的配置
+
+打开Mybatis配置文件，一般在Resource路径下。我这里叫mybatis-config.xml。
+
+<?xml version="1.0" encoding="UTF-8"?>
+ 
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+ 
+<configuration>
+<!-- 全局参数 -->
+<settings>
+    <!-- 使全局的映射器启用或禁用缓存。 -->
+    <setting name="cacheEnabled" value="true"/>
+    <!-- 全局启用或禁用延迟加载。当禁用时，所有关联对象都会即时加载。 -->
+    <setting name="lazyLoadingEnabled" value="true"/>
+    <!-- 当启用时，有延迟加载属性的对象在被调用时将会完全加载任意属性。否则，每种属性将会按需要加载。 -->
+    <setting name="aggressiveLazyLoading" value="true"/>
+    <!-- 是否允许单条sql 返回多个数据集  (取决于驱动的兼容性) default:true -->
+    <setting name="multipleResultSetsEnabled" value="true"/>
+    <!-- 是否可以使用列的别名 (取决于驱动的兼容性) default:true -->
+    <setting name="useColumnLabel" value="true"/>
+    <!-- 允许JDBC 生成主键。需要驱动器支持。如果设为了true，这个设置将强制使用被生成的主键，有一些驱动器不兼容不过仍然可以执行。  default:false  -->
+    <setting name="useGeneratedKeys" value="true"/>
+    <!-- 指定 MyBatis 如何自动映射 数据基表的列 NONE：不隐射　PARTIAL:部分  FULL:全部  -->
+    <setting name="autoMappingBehavior" value="PARTIAL"/>
+    <!-- 这是默认的执行类型  （SIMPLE: 简单； REUSE: 执行器可能重复使用prepared statements语句；BATCH: 执行器可以重复执行语句和批量更新）  -->
+    <setting name="defaultExecutorType" value="SIMPLE"/>
+    <!-- 使用驼峰命名法转换字段。 -->
+    <setting name="mapUnderscoreToCamelCase" value="true"/>
+    <!-- 设置本地缓存范围 session:就会有数据的共享  statement:语句范围 (这样就不会有数据的共享 ) defalut:session -->
+    <setting name="localCacheScope" value="SESSION"/>
+    <!-- 设置但JDBC类型为空时,某些驱动程序 要指定值,default:OTHER，插入空值时不需要指定类型 -->
+    <setting name="jdbcTypeForNull" value="NULL"/>
+</settings>
+ 
+<plugins>
+    <plugin interceptor="com.github.pagehelper.PageHelper">
+        <property name="dialect" value="mysql"/>
+        <property name="offsetAsPageNum" value="false"/>
+        <property name="rowBoundsWithCount" value="false"/>
+        <property name="pageSizeZero" value="true"/>
+        <property name="reasonable" value="false"/>
+        <property name="supportMethodsArguments" value="false"/>
+        <property name="returnPageInfo" value="none"/>
+    </plugin>
+</plugins>
+</configuration>　　
+这里要注意的是PageHelper相关的配置。 
+
+ 
+
+如果你没有加载Mybatis配置文件，那么使用的是Mybatis默认的配置。如何加载Mybatis配置文件呢？
+
+到你的dataSrouce配置中。
+
+在配置sqlSessionFactory的时候，指定Mybatis核心配置文件和mapper的路径，代码如下
+
+@Bean(name = "moonlightSqlSessionFactory")
+@Primary
+public SqlSessionFactory moonlightSqlSessionFactory(@Qualifier("moonlightData") DataSource dataSource) throws Exception {
+    SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
+    bean.setDataSource(dataSource);
+    bean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mybatis-mapper/*.xml"));
+    bean.setConfigLocation(new ClassPathResource("mybatis-config.xml"));
+    return bean.getObject();
+}　
+说明：
+
+这里配置的mapper.xml存放路径，在Resource/mybatis-mapper文件夹下
+
+这里配置的mybatis-config.xml文件，在Resource/下
+
+ 
+
+ 
+
+3、分页
+
+准备一个mapper.xml，测试就随便写一个吧，干脆就用工程里的一个。
+
+这里这个查询，是一个典型的多条件查询，我们要做的是对多条件匹配到的记录进行分页。
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kangaroo.studio.moonlight.dao.mapper.MoonlightMapper">
+  <resultMap id="geoFenceList" type="com.kangaroo.studio.moonlight.dao.model.GeoFence">
+    <constructor>
+      <idArg column="id" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="name" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="type" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="group" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="geo" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="createTime" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="updateTime" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+ 
+  <sql id="base_column">id, name, type, `group`, geo, createTime, updateTime </sql>
+ 
+  <select id="queryGeoFence" parameterType="com.kangaroo.studio.moonlight.dao.model.GeoFenceQueryParam" resultMap="geoFenceList">
+    select <include refid="base_column"/> from geoFence where 1=1
+    <if test="type != null">
+      and type = #{type}
+    </if>
+    <if test="name != null">
+      and name like concat('%', #{name},'%')
+    </if>
+    <if test="group != null">
+      and `group` like concat('%', #{group},'%')
+    </if>
+    <if test="startTime != null">
+      and createTime >= #{startTime}
+    </if>
+    <if test="endTime != null">
+      and createTime <= #{endTime}
+    </if>
+  </select>
+</mapper>
+　　
+
+在Mapper.java接口中编写对应的方法
+
+List<GeoFence> queryGeoFence(GeoFenceQueryParam geoFenceQueryParam);
+　　
+先上分页代码，后面再说明
+
+@RequestMapping(value = "/fence/query", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<Response> queryFence(@RequestBody GeoFenceQueryParam geoFenceQueryParam) {
+        try {
+            Map<String, Object> data = new HashMap<>();
+            Integer pageNum = geoFenceQueryParam.getPageNum()!=null?geoFenceQueryParam.getPageNum():1;
+            Integer pageSize = geoFenceQueryParam.getPageSize()!=null?geoFenceQueryParam.getPageSize():10;
+            Page page = PageHelper.startPage(pageNum, pageSize, true);
+            List<GeoFence> list = moonlightMapper.queryGeoFence(geoFenceQueryParam);
+            data.put("total", page.getTotal());
+            data.put("nowPage", pageNum);
+            data.put("data", list);
+            return new ResponseEntity<>(
+                    new Response(ResultCode.SUCCESS, "查询geoFence成功", data),
+                    HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("查询geoFence失败", e);
+            return new ResponseEntity<>(
+                    new Response(ResultCode.EXCEPTION, "查询geoFence失败", null),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+ 
+
+ 
+
+说明：
+
+1、PageHelper的优点是，分页和Mapper.xml完全解耦。实现方式是以插件的形式，对Mybatis执行的流程进行了强化，添加了总数count和limit查询。属于物理分页。
+
+2、Page page = PageHelper.startPage(pageNum, pageSize, true); - true表示需要统计总数，这样会多进行一次请求select count(0); 省略掉true参数只返回分页数据。 
+
+1)统计总数，（将SQL语句变为 select count(0) from xxx,只对简单SQL语句其效果，复杂SQL语句需要自己写）
+
+    Page<?> page = PageHelper.startPage(1,-1);
+
+    long count = page.getTotal();
+
+2)分页，pageNum - 第N页， pageSize - 每页M条数
+
+    A、只分页不统计(每次只执行分页语句)
+
+    PageHelper.startPage([pageNum],[pageSize]);
+
+    List<?> pagelist = queryForList( xxx.class, "queryAll" , param);
+
+    //pagelist就是分页之后的结果
+
+    B、分页并统计（每次执行2条语句，一条select count语句，一条分页语句）适用于查询分页时数据发生变动，需要将实时的变动信息反映到分页结果上
+
+    Page<?> page = PageHelper.startPage([pageNum],[pageSize],[iscount]);
+
+    List<?> pagelist = queryForList( xxx.class , "queryAll" , param);
+
+    long count = page.getTotal();
+
+    //也可以 List<?> pagelist = page.getList();  获取分页后的结果集
+
+3)使用PageHelper查全部（不分页）
+
+    PageHelper.startPage(1,0);
+
+    List<?> alllist = queryForList( xxx.class , "queryAll" , param);
+
+4)PageHelper的其他API
+
+    String orderBy = PageHelper.getOrderBy();    //获取orderBy语句
+
+    Page<?> page = PageHelper.startPage(Object params);
+
+    Page<?> page = PageHelper.startPage(int pageNum, int pageSize);
+
+    Page<?> page = PageHelper.startPage(int pageNum, int pageSize, boolean isCount);
+
+    Page<?> page = PageHelper.startPage(pageNum, pageSize, orderBy);
+
+    Page<?> page = PageHelper.startPage(pageNum, pageSize, isCount, isReasonable);    //isReasonable分页合理化,null时用默认配置
+
+    Page<?> page = PageHelper.startPage(pageNum, pageSize, isCount, isReasonable, isPageSizeZero);    //isPageSizeZero是否支持PageSize为0，true且pageSize=0时返回全部结果，false时分页,null时用默认配置
+
+5)、默认值
+
+    //RowBounds参数offset作为PageNum使用 - 默认不使用
+
+    private boolean offsetAsPageNum = false;
+
+    //RowBounds是否进行count查询 - 默认不查询
+
+    private boolean rowBoundsWithCount = false;
+
+    //当设置为true的时候，如果pagesize设置为0（或RowBounds的limit=0），就不执行分页，返回全部结果
+
+    private boolean pageSizeZero = false;
+
+    //分页合理化
+
+    private boolean reasonable = false;
+
+    //是否支持接口参数来传递分页参数，默认false
+
+    private boolean supportMethodsArguments = false;  
+
+ 
+
+3、有一个安全性问题，需要注意一下，不然可能导致分页错乱。我这里直接粘贴了这篇博客里的一段话。
+
+4. 什么时候会导致不安全的分页？
+ 
+PageHelper 方法使用了静态的 ThreadLocal 参数，分页参数和线程是绑定的。
+ 
+只要你可以保证在 PageHelper 方法调用后紧跟 MyBatis 查询方法，这就是安全的。因为 PageHelper 在 finally 代码段中自动清除了 ThreadLocal 存储的对象。
+ 
+如果代码在进入 Executor 前发生异常，就会导致线程不可用，这属于人为的 Bug（例如接口方法和 XML 中的不匹配，导致找不到 MappedStatement 时）， 这种情况由于线程不可用，也不会导致 ThreadLocal 参数被错误的使用。
+ 
+但是如果你写出下面这样的代码，就是不安全的用法：
+ 
+PageHelper.startPage(1, 10);
+List<Country> list;
+if(param1 != null){
+    list = countryMapper.selectIf(param1);
+} else {
+    list = new ArrayList<Country>();
+}
+这种情况下由于 param1 存在 null 的情况，就会导致 PageHelper 生产了一个分页参数，但是没有被消费，这个参数就会一直保留在这个线程上。当这个线程再次被使用时，就可能导致不该分页的方法去消费这个分页参数，这就产生了莫名其妙的分页。
+ 
+上面这个代码，应该写成下面这个样子：
+ 
+List<Country> list;
+if(param1 != null){
+    PageHelper.startPage(1, 10);
+    list = countryMapper.selectIf(param1);
+} else {
+    list = new ArrayList<Country>();
+}
+这种写法就能保证安全。
+ 
+如果你对此不放心，你可以手动清理 ThreadLocal 存储的分页参数，可以像下面这样使用：
+ 
+List<Country> list;
+if(param1 != null){
+    PageHelper.startPage(1, 10);
+    try{
+        list = countryMapper.selectAll();
+    } finally {
+        PageHelper.clearPage();
+    }
+} else {
+    list = new ArrayList<Country>();
+}
+这么写很不好看，而且没有必要。
+　　
+
+官方文档，给你参考：
+
+https://github.com/pagehelper/Mybatis-PageHelper/blob/master/wikis/zh/HowToUse.md
