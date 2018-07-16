@@ -1,0 +1,2 @@
+/*1.用到了求和函数，2.这样就需要给求和值加上新的字段别名用as，3.用group by进行分组，4.用order by进行排序*/
+select field_name , SUM(another_field_name) as alias_name from table_name gruop by field_name order by field_name asc|desc; 
