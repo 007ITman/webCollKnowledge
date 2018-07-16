@@ -1,0 +1,80 @@
+Last login: Mon Jul 16 09:58:11 on console
+mac-compile:~ alyr$ git clone http://gitlab.donopo.com:8888/emo/LightWalletServer/blockchain-light-wallet-server.git
+Cloning into 'blockchain-light-wallet-server'...
+Username for 'http://gitlab.donopo.com:8888': zhangdong
+Password for 'http://zhangdong@gitlab.donopo.com:8888':
+remote: Counting objects: 3202, done.
+remote: Compressing objects: 100% (2432/2432), done.
+remote: Total 3202 (delta 643), reused 3128 (delta 609)
+Receiving objects: 100% (3202/3202), 149.32 MiB | 9.23 MiB/s, done.
+Resolving deltas: 100% (643/643), done.
+mac-compile:~ alyr$ ls
+AlyrWorkSpace			Pictures
+Applications			Public
+Desktop				Qt5.8.0
+Documents			aa
+Downloads			block_chain
+Dropbox				blockchain-light-wallet-server
+LayaAirIDE			develop
+LearnProjects			gitlab
+LearnSpace			ipmsg.db
+Library				常用文本
+Movies				文档记录
+Music				软件安装包
+PassWord			项目相关文件
+mac-compile:~ alyr$ ls
+AlyrWorkSpace			Pictures
+Applications			Public
+Desktop				Qt5.8.0
+Documents			aa
+Downloads			block_chain
+Dropbox				blockchain-light-wallet-server
+LayaAirIDE			develop
+LearnProjects			gitlab
+LearnSpace			ipmsg.db
+Library				常用文本
+Movies				文档记录
+Music				软件安装包
+PassWord			项目相关文件
+mac-compile:~ alyr$ cd .ssh/
+mac-compile:.ssh alyr$ ls
+id_rsa		id_rsa.pub	known_hosts
+mac-compile:.ssh alyr$ rm -rf id_rsa id_rsa.pub
+mac-compile:.ssh alyr$ ls
+known_hosts
+mac-compile:.ssh alyr$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/Volumes/SSD/alyr/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /Volumes/SSD/alyr/.ssh/id_rsa.
+Your public key has been saved in /Volumes/SSD/alyr/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:TsCKBx5h+02rTED/ZeAOxelqrcmcA+TsG4TS6Xgevhc alyr@mac-compile.local
+The key's randomart image is:
++---[RSA 2048]----+
+|  +  .o.         |
+| o + +o.         |
+|  = o.= o        |
+| +.B B.=         |
+|o+* =o= S        |
+|.+++E..o         |
+|..==o=  .        |
+| +.oO            |
+|  =+ .           |
++----[SHA256]-----+
+mac-compile:.ssh alyr$ ls
+id_rsa		id_rsa.pub	known_hosts
+mac-compile:.ssh alyr$ cat id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEtjfsqAKPW9BclknnPniwNZlF+G+InPY/g62FO6I5wkTN7myhHyBQ19OGB/XEb0oCZazQaKFZbzbYQkrE+vzleEIu1EfOI36qIKPYXg2W6w/xrKhqcfOsLovJ8OaHJZ+KFzxWqk3w3BD6qJek/VU0RLXUms4E5vfsf8J7HI4dkJgCLS4uwFCD1N09Rf7kpO71V5Hd4AZQnKFJ9wNqcxCZ/1bncuHuNsmEWCCUDQr3RMMFsXg/7J+xvQ/jDCacyMmcitE1ExDAXkOIcCs0kvDlXN1o2cgsO6RjweoSKNwGt46gNsV8vyTgAwZF6Lsuxt6AdaZme8p3kojCPj+t+9lX alyr@mac-compile.local
+mac-compile:.ssh alyr$ cd .ssh/
+-bash: cd: .ssh/: No such file or directory
+mac-compile:.ssh alyr$ ls
+id_rsa		id_rsa.pub	known_hosts
+mac-compile:.ssh alyr$ pwd
+/Volumes/SSD/alyr/.ssh
+mac-compile:.ssh alyr$ ls
+id_rsa		id_rsa.pub	known_hosts
+mac-compile:.ssh alyr$ cat id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEtjfsqAKPW9BclknnPniwNZlF+G+InPY/g62FO6I5wkTN7myhHyBQ19OGB/XEb0oCZazQaKFZbzbYQkrE+vzleEIu1EfOI36qIKPYXg2W6w/xrKhqcfOsLovJ8OaHJZ+KFzxWqk3w3BD6qJek/VU0RLXUms4E5vfsf8J7HI4dkJgCLS4uwFCD1N09Rf7kpO71V5Hd4AZQnKFJ9wNqcxCZ/1bncuHuNsmEWCCUDQr3RMMFsXg/7J+xvQ/jDCacyMmcitE1ExDAXkOIcCs0kvDlXN1o2cgsO6RjweoSKNwGt46gNsV8vyTgAwZF6Lsuxt6AdaZme8p3kojCPj+t+9lX alyr@mac-compile.local
+mac-compile:.ssh alyr$
