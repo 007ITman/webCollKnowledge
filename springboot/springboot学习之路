@@ -1,0 +1,170 @@
+=======================================  学习springboot之路  2018.07.18==============================================================
+1.打开IDEA,创建新项目，选择Spring Initializr
+
+
+
+
+
+2.输入Artifact
+
+
+
+
+
+3.勾选Web
+
+
+
+
+
+4.点击finish完成
+
+
+
+
+
+5.进入项目，可以将以下内容删除
+
+
+
+pom.xml文件：
+
+[html] view plain copy
+<code class="language-html"><?xml version="1.0" encoding="UTF-8"?>  
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">  
+    <modelVersion>4.0.0</modelVersion>  
+  
+    <groupId>com.example</groupId>  
+    <artifactId>springbootdemo</artifactId>  
+    <version>0.0.1-SNAPSHOT</version>  
+    <packaging>jar</packaging>  
+  
+    <name>springbootdemo</name>  
+    <description>Demo project for Spring Boot</description>  
+  
+    <!--起步依赖-->  
+    <parent>  
+        <groupId>org.springframework.boot</groupId>  
+        <artifactId>spring-boot-starter-parent</artifactId>  
+        <version>1.5.2.RELEASE</version>  
+        <relativePath/> <!-- lookup parent from repository -->  
+    </parent>  
+  
+    <properties>  
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>  
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>  
+        <java.version>1.8</java.version>  
+    </properties>  
+  
+    <dependencies>  
+        <!--开发web项目相关依赖-->  
+        <dependency>  
+            <groupId>org.springframework.boot</groupId>  
+            <artifactId>spring-boot-starter-web</artifactId>  
+        </dependency>  
+        <!--springboot单元测试-->  
+        <dependency>  
+            <groupId>org.springframework.boot</groupId>  
+            <artifactId>spring-boot-starter-test</artifactId>  
+            <scope>test</scope>  
+        </dependency>  
+    </dependencies>  
+  
+    <!--maven构建-->  
+    <build>  
+        <plugins>  
+            <plugin>  
+                <groupId>org.springframework.boot</groupId>  
+                <artifactId>spring-boot-maven-plugin</artifactId>  
+            </plugin>  
+        </plugins>  
+    </build>  
+  
+  
+</project>  
+</code>  
+
+
+6.创建一个HelloController
+
+package com.example;
+ 
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+ 
+@RestController
+public class HelloController {
+ 
+    @RequestMapping("/hello")
+    public String hello() {
+        return "hello,this is a springboot demo";
+    }
+}
+
+
+7.程序自动生成的SpringbootdemoApplication，会有一个@SpringBootApplication的注解，这个注解用来标明这个类是程序的入口
+package com.example;
+ 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+ 
+//入口
+@SpringBootApplication
+public class SpringbootdemoApplication {
+ 
+	public static void main(String[] args) {
+		SpringApplication.run(SpringbootdemoApplication.class, args);
+	}
+}
+@SpringBootApplication开启了Spring的组件扫描和springboot的自动配置功能，相当于将以下三个注解组合在了一起
+
+（1）@Configuration：表名该类使用基于Java的配置,将此类作为配置类
+
+（2）@ComponentScan：启用注解扫描
+
+（3）@EnableAutoConfiguration：开启springboot的自动配置功能
+
+
+
+8.运行SpringbootdemoApplication类
+
+
+
+
+测试：
+
+在地址栏中输入http://localhost:8080/hello
+
+
+
+
+
+
+
+9.使用启动jar包的方式启动
+
+（1）首先进入项目所在目录，如果是mac系统在项目上右键，选择Reveal in Finder,Windows系统在项目上右键选择Show in Explorer，即可打开项目所在目录
+
+（2）打开终端，进入项目所在目录
+
+     cd /Users/shanml/IdeaProjects/SpringbootDemo
+
+     输入mvn install,构建项目
+
+（3）构建成功后，在项目target文件夹下会多出一个jar包
+
+（4）使用java -jar springbootdemo-0.0.1-SNAPSHOT.jar 
+
+     启动jar包即可
+
+
+
+==========================================================================================================================
+问题：配置完之后在网站出现如下的问题
+Swagger-UI提示Unable to infer base url. This is common when using dynamic servlet registration
+
+解决方案：
+在application主函数添加@EnableSwagger2（启用swagger2的）注解就可以解决了。
+==========================================================================================================================
+
