@@ -108,3 +108,49 @@ INSERT INTO sc(sno,cno,score)VALUES(7,5,89);
 
 ============================50个问题=================================
 -- 1、查询课程1的成绩比课程2的成绩高的所有学生的学号；
+(select sno,score from sc where cno = 1) as con1;
+(select sno,score from sc where cno = 2) as con2;
+select sno from (select sno,score from sc where cno = 1) as con1,(select sno,score from sc where cno = 2) as con2 
+
+where con1.sno = con2.sno and con1.score > con2.score;报错----ERROR 1052(23000) :Column 'sno' in field list is 
+
+ambiguous(模糊不清的)
+修正：select con1.sno as sno from (select sno,score from sc where cno = 1) as con1,(select sno,score from sc 
+
+where cno = 2) as con2 where con1.sno = con2.sno and con1.score > con2.score;
+=====================================================================
+
+-- 2、查询平均成绩大于60分的同学的学号和平均成绩；
+select sno , avg(score) as average_Score from sc group by sno having avg(score);
+======================================做第2题所产生的问题与解决过程============================================
+在更新表数据的过程中，误更新了其他数据，头疼，回滚如果没有设置回滚点就只能回到上一条命令，问题是我select * 后才发现的
+错误，此时就没办法使用回滚了，这是需要注意的问题了，1更新的where条件一定要写准确2为防止这样的事情发生就提前设置回滚点。
+现在在网上找相应的解决方案：主要还是通过binlog来进行恢复，前提是binlog_format必须是Row格式，否则只能通过备份来恢复数据
+
+了!
+/*遇到的问题：先提一下最简单的方法就是设置保存点，但是在设置过程中遇到一个问题，就是保存点不存在，后在网上找到原因：
+autocommit模式：在开启情况下，对于每条statement来说，都会自动形成一个commit，也就是会即时对开始和结束一个事务。所以，
+
+当出现rollback to savepoint出现这个错误时，第一步是检查autocommit模式是否有开启。
+select @@autocommit;
+1则代表开启，0则代表未开启。如果需要关闭，则输入以下代码set autocommit = 0;
+这时候，就是必须对每一个事务都要手动开始或保存。代码为start transaction or begin  要结束的话，就要comment或者rollback
+
+来结束这个阶段 在autocommit开启的情况下，也可以人为地，将好几个statement合在一起，这时也是用上一段代码，这时候commit或
+
+者rollback的就是好几条statement了*/
+
+历史遗留问题：
+1.my.ini的配置问题，如何配置与使用
+2.关于binlog的my.ini配置完成后，如何使用，并且能执行数据恢复
+3.数据备份是怎么做，恢复又是怎么做
+======================================================================
+mysql在电脑的服务中没有此任务解决方法：运行命令 C:\Program Files\MySQL\MySQL Server 5.5\bin>mysqld.exe -install 回车
+出现Service successfully installed.
+======================================================================
+select @@basedir 查找mysql的安装目录
+select @@datadir 查找数据存储目录
+=========================================第2题 end  ========================
+
+
+
