@@ -1,0 +1,1194 @@
+
+-- 1、查询课程1的成绩 比 课程2的成绩 高 的所有学生的学号；
+-- 思路：子查询 + 表的别名 + 联结 + 过滤
+-- given answer
+SELECT a.sno FROM
+(SELECT sno,score FROM sc WHERE cno=1) AS a,
+(SELECT sno,score FROM sc WHERE cno=2) AS b
+WHERE a.score>b.score AND a.sno=b.sno;
+
+
+-- my answer
+SELECT a.sno
+FROM (SELECT sno, score
+  FROM sc
+  WHERE cno = 1) AS a,
+(SELECT sno, score
+  FROM sc
+  WHERE cno = 2) AS b
+WHERE a.sno = b.sno
+AND a.score > b.score;
+
+
+-- ----------------------------------------------------------------
+-- 2、查询平均成绩大于60分的同学的学号和平均成绩；
+-- 思路：分组 + HAVING分组过滤
+-- given answer
+SELECT sno,AVG(score) AS sscore FROM sc GROUP BY sno HAVING AVG(score) >60;
+
+
+-- my answer
+SELECT sno, AVG(score) AS AVG
+FROM sc
+GROUP BY sno
+HAVING AVG(score) > 60;
+
+
+-- ----------------------------------------------------------------
+-- 3、查询所有同学的学号、姓名、选课数、总成绩；
+-- 思路：联结 + 分组
+-- given answer
+SELECT a.sno AS 学号, b.sname AS 姓名,
+COUNT(a.cno) AS 选课数, SUM(a.score) AS 总成绩
+FROM sc a, student b
+WHERE a.sno = b.sno
+GROUP BY a.sno, b.sname;
+
+
+-- my answer
+SELECT sc.sno, s.sname, COUNT(sc.cno) AS totalnum, SUM(sc.score) AS totalscore
+FROM sc, student AS s
+WHERE sc.sno = s.sno
+GROUP BY sc.sno;
+
+
+-- ----------------------------------------------------------------
+-- 4、查询姓“李”的老师的个数；
+-- 思路：通配符的使用
+-- given answer
+SELECT COUNT(DISTINCT(tname)) FROM teacher WHERE tname LIKE '李%';
+
+
+-- my answer
+SELECT COUNT(DISTINCT tname) AS 姓“李”的老师的个数
+FROM teacher
+WHERE tname LIKE '李%';
+
+
+-- ----------------------------------------------------------------
+-- 5、查询没学过“叶平”老师课的同学的学号、姓名；
+-- 思路：找出学过“叶平”老师课的同学，然后用NOT IN
+-- given answer
+SELECT student.sno,student.sname FROM student
+WHERE sno NOT IN (SELECT DISTINCT(sc.sno) FROM sc,course,teacher
+WHERE sc.cno=course.cno AND teacher.tno=course.tno AND teacher.tname='叶平');
+
+
+-- my answer
+SELECT s.sno, s.sname
+FROM student AS s
+WHERE s.sno NOT IN (SELECT sc.sno
+FROM sc, teacher AS t, course AS c
+WHERE sc.cno = c.cno
+AND c.tno = t.tno
+AND t.tname='叶平');
+
+
+------------------------------------------------------------------
+-- 6、查询同时学过课程1和课程2的同学的学号、姓名；
+-- 思路：IN 的 交集
+-- given answer
+SELECT sno, sname FROM student
+WHERE sno IN (SELECT sno FROM sc WHERE sc.cno = 1)
+AND sno IN (SELECT sno FROM sc WHERE sc.cno = 2);
+
+
+-- my answer
+SELECT sno, sname
+FROM student
+WHERE sno IN (SELECT a.sno
+  FROM (SELECT sno
+FROM sc
+WHERE cno = 1) AS a,
+   (SELECT sno
+FROM sc
+WHERE cno = 2) AS b
+  WHERE a.sno = b.sno);
+
+
+------------------------------------------------------------------
+-- 7、查询学过“叶平”老师所教所有课程的所有同学的学号、姓名；
+-- 思路：IN + 子查询
+-- given answer
+SELECT a.sno, a.sname FROM student a, sc b
+WHERE a.sno = b.sno AND b.cno IN
+(SELECT c.cno FROM course c, teacher d WHERE c.tno = d.tno AND d.tname = '叶平');
+
+
+-- my answer
+SELECT sno, sname
+FROM student
+WHERE sno IN (SELECT sc.sno
+  FROM sc, teacher AS t, course AS c
+  WHERE sc.cno = c.cno
+  AND c.tno = t.tno
+  AND t.tname = '叶平');
+
+
+-- ----------------------------------------------------------------
+-- 8、查询 课程编号1的成绩 比 课程编号2的成绩 高的所有同学的学号、姓名；
+-- 思路：
+-- given answer
+SELECT a.sno, a.sname FROM student a,
+(SELECT sno, score FROM sc WHERE cno = 1) b,
+(SELECT sno, score FROM sc WHERE cno = 2) c
+WHERE b.score > c.score AND b.sno = c.sno AND a.sno = b.sno;
+
+
+-- my answer
+SELECT sno, sname
+FROM student
+WHERE sno IN (SELECT a.sno
+  FROM (SELECT sno, score
+        FROM sc
+        WHERE cno = 1) AS a,
+       (SELECT sno, score
+        FROM sc
+        WHERE cno = 2) AS b
+    WHERE a.sno = b.sno
+  AND a.score > b.score);
+
+
+-- ----------------------------------------------------------------
+-- 9、查询所有课程成绩小于60分的同学的学号、姓名；
+-- 思路：所有成绩小于60 其补集为 有至少一门成绩大于60
+-- given answer
+SELECT sno, sname FROM student
+WHERE sno NOT IN (SELECT DISTINCT sno FROM sc WHERE score > 60);
+
+
+--mY answer
+SELECT sno, sname
+FROM student
+WHERE sno NOT IN (SELECT DISTINCT sno
+  FROM sc
+  WHERE score > 60);
+
+
+-- ----------------------------------------------------------------
+-- 10、查询所有课程成绩大于60分的同学的学号、姓名；
+-- 思路：与第9题相同
+-- given answer
+SELECT sno,sname FROM student
+WHERE sno NOT IN (SELECT DISTINCT sno FROM sc WHERE score < 60);
+
+
+-- my answer
+SELECT sno, sname
+FROM student
+WHERE sno NOT IN (SELECT DISTINCT sno
+  FROM sc
+  WHERE score < 60);
+
+
+--11、查询没有学全所有课的同学的学号、姓名；
+--思路：NOT + 子查询
+--given answer
+select student.sno, student.sname
+from student, sc
+where student.sno = sc.sno
+group by student.sno, student.sname
+having count(sc.cno) < (select count(cno) from course);
+
+
+--my answer
+SELECT sno, sname
+FROM student
+WHERE sno NOT IN (SELECT sno
+FROM sc, course AS c
+WHERE sc.cno = c.cno
+GROUP BY sc.sno
+HAVING COUNT(sc.cno) = (SELECT COUNT(cno)
+    FROM course));
+
+
+------------------------------------------------------------------
+--12、查询至少有一门课程 与 学号为1的同学所学课程 相同的同学的学号和姓名；
+--思路：联结 or 子查询
+--given answer
+select distinct a.sno, a.sname
+from student a, sc b
+where a.sno <> 1 and a.sno=b.sno and
+b.cno in (select cno from sc where sno = 1);
+
+
+--my answer
+--子查询
+SELECT sno, sname
+FROM student
+WHERE sno IN (SELECT DISTINCT sno
+  FROM sc
+  WHERE cno IN (SELECT cno
+    FROM sc
+    WHERE sno = 1))
+AND sno != 1;
+
+
+--联结
+SELECT DISTINCT s.sno, s.sname
+FROM sc, student AS s
+WHERE sc.sno = s.sno
+AND s.sno != 1
+AND sc.cno IN (SELECT cno
+   FROM sc
+   WHERE sno = 1);
+
+
+------------------------------------------------------------------
+--13、把“sc”表中“刘老师”所教课的成绩都更改为此课程的平均成绩；
+--思路：更改数据UPDATE + 子查询 + 注意：SET子句中的子查询必须来源于复制的表sc1
+--given answer，网上的答案是错误的
+update sc set score = (select avg(sc_2.score) from sc sc_2 where sc_2.cno=sc.cno)
+from course,teacher where course.cno=sc.cno and course.tno=teacher.tno and teacher.tname='刘老师';
+
+
+--my answer
+--创建测试表
+CREATE TABLE sc1(
+    sno int NOT NULL,
+    cno int NOT NULL,
+    score int NOT NULL
+);
+
+
+INSERT INTO sc1
+SELECT *
+FROM sc;
+
+
+--更改数据
+UPDATE sc
+SET score = (SELECT AVG(score)
+FROM sc1
+GROUP BY sc1.cno
+HAVING sc1.cno = (SELECT c.cno
+     FROM course AS c, teacher AS t
+       WHERE c.tno = t.tno
+       AND t.tname = '刘老师'))
+WHERE cno IN (SELECT c.cno
+FROM course AS c, teacher AS t
+WHERE c.tno = t.tno
+AND t.tname = '刘老师');
+
+
+--恢复sc
+TRUNCATE TABLE sc;
+
+
+INSERT INTO sc
+SELECT *
+FROM sc1;
+
+
+------------------------------------------------------------------
+--14、查询和2号同学学习的课程完全相同的其他同学学号和姓名；
+--思路：课程完全相同 转化为 课程号的总和、均值完全相同 从而可以 使用聚合函数
+--given answer
+select b.sno, b.sname
+from sc a, student b
+where b.sno <> 2 and a.sno = b.sno
+group by b.sno, b.sname
+having sum(cno) = (select sum(cno) from sc where sno = 2);
+
+
+--my answer
+SELECT s.sno, s.sname
+FROM sc, student AS s
+WHERE sc.sno = s.sno
+AND sc.sno != 2
+GROUP BY s.sno
+HAVING SUM(sc.cno) = (SELECT SUM(cno)
+  FROM sc
+  WHERE sno = 2)
+AND AVG(sc.cno) = (SELECT AVG(cno)
+   FROM sc
+   WHERE sno = 2);
+
+
+------------------------------------------------------------------
+--15、删除学习“叶平”老师课的sc表记录；
+--思路：删除数据 + 子查询
+--given answer，网上的答案是错误的
+delete sc from course, teacher
+where course.cno = sc.cno and course.tno = teacher.tno and tname = '叶平';
+
+
+--my answer
+--创建测试表
+CREATE TABLE sc1(
+    sno int NOT NULL,
+    cno int NOT NULL,
+    score int NOT NULL
+);
+
+
+INSERT INTO sc1
+SELECT *
+FROM sc;
+
+
+--删除数据
+DELETE FROM sc
+WHERE cno = (SELECT c.cno
+             FROM course AS c, teacher AS t
+             WHERE c.tno = t.tno
+             AND t.tname = '叶平');
+
+
+--恢复sc
+TRUNCATE TABLE sc;
+
+
+INSERT INTO sc
+SELECT *
+FROM sc1;
+
+
+
+
+
+--16、向sc表中插入一些记录，这些记录要求符合以下条件：
+--将没有课程3成绩同学的该成绩补齐, 其成绩取所有学生的课程2的平均成绩；
+--思路：INSERT SELECT + SELECT中可以有常数
+--given answer
+INSERT sc select sno, 3, (select avg(score) from sc where cno = 2)
+from student
+where sno not in (select sno from sc where cno = 3);
+
+
+--my answer，这题没做出来，仿照正确答案写了自己的答案
+INSERT INTO sc
+SELECT sno, 3, (SELECT AVG(score)
+FROM sc
+WHERE cno = 2)
+FROM student
+WHERE sno NOT IN (SELECT sno
+  FROM sc
+  WHERE cno = 3);
+
+
+------------------------------------------------------------------
+--17、按平平均分从高到低显示所有学生的如下统计报表：
+--学号,企业管理,马克思,UML,数据库,物理,课程数,平均分；
+--思路：CASE WHEN THEN ELSE END 的用法，在分组后，要提取每个组中的特定值（非聚合值）时用到 + CASE对分组中每一列都会运算，所以注意加上MAX，否则会输出NULL
+--given answer
+SELECT sno as 学号
+,max(case when cno = 1 then score end) AS 企业管理
+,max(case when cno = 2 then score end) AS 马克思
+,max(case when cno = 3 then score end) AS UML
+,max(case when cno = 4 then score end) AS 数据库
+,max(case when cno = 5 then score end) AS 物理
+,count(cno) AS 课程数
+,avg(score) AS 平均分
+FROM sc
+GROUP by sno
+ORDER by avg(score) DESC;
+
+
+--my answer，这题没做出来，仿照正确答案写了自己的答案
+SELECT sno AS 学号,
+MAX(CASE WHEN cno = 1 THEN score END) AS 企业管理,
+MAX(CASE WHEN cno = 2 THEN score END) AS 马克思,
+MAX(CASE WHEN cno = 3 THEN score END) AS UML,
+MAX(CASE WHEN cno = 4 THEN score END) AS 数据库,
+MAX(CASE WHEN cno = 5 THEN score END) AS 物理,
+COUNT(cno) AS 课程数,
+AVG(score) AS 平均分
+FROM sc
+GROUP BY sno
+ORDER BY AVG(score) DESC;
+
+
+------------------------------------------------------------------
+--18、查询各科成绩最高分和最低分：以如下形式显示：课程号，最高分，最低分；
+--思路：用AS来命名列名
+--given answer
+select cno as 课程号, max(score) as 最高分, min(score) 最低分
+from sc group by cno;
+
+
+--my answer
+SELECT cno AS 课程号, MAX(score) AS 最高分, MIN(score) AS 最低分
+FROM sc
+GROUP BY cno;
+
+
+------------------------------------------------------------------
+--19、查询课程号、课程名、各科平均成绩、及格率，按各科平均成绩从低到高和及格率的百分数从高到低顺序；
+--思路：IFNULL的用法(IFNULL在这里可以省略) + 分组后计算及格率的方法 + 分组的SELECT要用聚合函数 + 同时升序和降序的语法
+--given answer
+SELECT max(t.cno) AS 课程号,
+max(course.cname) AS 课程名,
+ifnull(AVG(score),0) AS 平均成绩,
+100 * SUM(CASE WHEN ifnull(score,0)>=60 THEN 1 ELSE 0 END)/count(score) AS 及格率
+FROM sc t, course
+where t.cno = course.cno
+GROUP BY t.cno
+ORDER BY 平均成绩 asc, 及格率 desc;
+
+
+--my answer，这题没做出来，仿照正确答案写了自己的答案
+SELECT MAX(c.cno) AS 课程号,
+MAX(c.cname) AS 课程名,
+IFNULL(AVG(score), 0) AS 平均成绩,
+100 * SUM(CASE WHEN IFNULL(score, 0) >= 60 THEN 1 ELSE 0 END) / COUNT(score) AS 及格率
+FROM sc, course AS c
+WHERE sc.cno = c.cno
+GROUP BY c.cno
+ORDER BY 平均成绩 ASC, 及格率 DESC;
+
+
+------------------------------------------------------------------
+--20、查询如下课程平均成绩和及格率的百分数(用"1行"显示): 企业管理（001），马克思（002），UML （003），数据库（004）；
+--思路：CASE WHEN AND THEN ELSE END 比前面的例子多了AND
+--given answer
+select 
+avg(case when cno = 1 then score end) as 平均分1,
+avg(case when cno = 2 then score end) as 平均分2,
+avg(case when cno = 3 then score end) as 平均分3,
+avg(case when cno = 4 then score end) as 平均分4,
+100 * sum(case when cno = 1 and score > 60 then 1 else 0 end) / sum(case when cno = 1 then 1 else 0 end) as 及格率1,
+100 * sum(case when cno = 2 and score > 60 then 1 else 0 end) / sum(case when cno = 2 then 1 else 0 end) as 及格率2,
+100 * sum(case when cno = 3 and score > 60 then 1 else 0 end) / sum(case when cno = 3 then 1 else 0 end) as 及格率3,
+100 * sum(case when cno = 4 and score > 60 then 1 else 0 end) / sum(case when cno = 4 then 1 else 0 end) as 及格率4
+from sc
+
+
+--my answer，这题没做出来，仿照正确答案写了自己的答案
+SELECT
+AVG(CASE WHEN cno = 1 THEN score END) AS 平均成绩1,
+AVG(CASE WHEN cno = 2 THEN score END) AS 平均成绩2,
+AVG(CASE WHEN cno = 3 THEN score END) AS 平均成绩3,
+AVG(CASE WHEN cno = 4 THEN score END) AS 平均成绩4,
+100 * SUM(CASE WHEN cno = 1 AND score >= 60 THEN 1 ELSE 0 END) / SUM(CASE WHEN cno = 1 THEN 1 ELSE 0 END) AS 及格率1,
+100 * SUM(CASE WHEN cno = 2 AND score >= 60 THEN 1 ELSE 0 END) / SUM(CASE WHEN cno = 2 THEN 1 ELSE 0 END) AS 及格率2,
+100 * SUM(CASE WHEN cno = 3 AND score >= 60 THEN 1 ELSE 0 END) / SUM(CASE WHEN cno = 3 THEN 1 ELSE 0 END) AS 及格率3,
+100 * SUM(CASE WHEN cno = 4 AND score >= 60 THEN 1 ELSE 0 END) / SUM(CASE WHEN cno = 4 THEN 1 ELSE 0 END) AS 及格率4
+FROM sc;
+
+
+
+
+
+--21、查询不同老师所教不同课程平均分, 从高到低显示
+--张老师 数据库 88；
+--思路：
+--given answer
+select max(c.tname) as 教师, max(b.cname) 课程, avg(a.score) 平均分
+from sc a, course b, teacher c
+where a.cno = b.cno and b.tno = c.tno
+group by a.cno
+order by 平均分 desc;
+
+
+--my answer
+SELECT MAX(t.tname) AS 教师,
+MAX(c.cname) AS 课程,
+AVG(score) AS 平均分
+FROM sc, course AS c, teacher AS t
+WHERE sc.cno = c.cno
+AND c.tno = t.tno
+GROUP BY t.tno
+ORDER BY 平均分 DESC;
+
+
+------------------------------------------------------------------
+--22、查询如下课程成绩均在第3名到第6名之间的学生的成绩：
+--[学生ID],[学生姓名],企业管理,马克思,UML,数据库,平均成绩；
+--思路：分组后的CASE + 子查询中使用limit + 注意要有嵌套和别名
+--given answer
+select max(a.sno) 学号, max(b.sname) 姓名,
+max(case when cno = 1 then score end) as 企业管理,
+max(case when cno = 2 then score end) as 马克思,
+max(case when cno = 3 then score end) as UML,
+max(case when cno = 4 then score end) as 数据库,
+avg(score) as 平均分
+from sc a, student b
+where a.sno in (select sno from (select sno from sc where cno = 1 order by score desc limit 2, 4) as in1)
+  and a.sno in (select sno from (select sno from sc where cno = 2 order by score desc limit 2, 4) as in2)
+  and a.sno in (select sno from (select sno from sc where cno = 3 order by score desc limit 2, 4) as in3)
+  and a.sno in (select sno from (select sno from sc where cno = 4 order by score desc limit 2, 4) as in4)
+  and a.sno = b.sno
+group by a.sno;
+
+
+--my answer，这题没做出来，仿照正确答案写了自己的答案
+SELECT MAX(sc.sno) AS 学生ID,
+MAX(s.sname) AS 学生姓名,
+MAX(CASE WHEN sc.cno = 1 THEN score END) AS 企业管理,
+MAX(CASE WHEN sc.cno = 2 THEN score END) AS 马克思,
+MAX(CASE WHEN sc.cno = 3 THEN score END) AS UML,
+MAX(CASE WHEN sc.cno = 4 THEN score END) AS 数据库,
+AVG(score) AS 平均成绩
+FROM sc, student AS s
+WHERE sc.sno = s.sno
+AND sc.sno IN (SELECT sno FROM (SELECT sno FROM sc WHERE cno = 1 ORDER BY score DESC LIMIT 2, 4) AS in1)
+AND sc.sno IN (SELECT sno FROM (SELECT sno FROM sc WHERE cno = 2 ORDER BY score DESC LIMIT 2, 4) AS in1)
+AND sc.sno IN (SELECT sno FROM (SELECT sno FROM sc WHERE cno = 3 ORDER BY score DESC LIMIT 2, 4) AS in1)
+AND sc.sno IN (SELECT sno FROM (SELECT sno FROM sc WHERE cno = 4 ORDER BY score DESC LIMIT 2, 4) AS in1)
+GROUP BY sc.sno;
+
+
+------------------------------------------------------------------
+--23、统计打印各科成绩,各分数段人数:课程ID,课程名称,[100-85],[85-70],[70-60],[ <60]；
+--思路：别名中如果有特殊符号，需要用''包起来
+--given answer
+select sc.cno as 课程ID, cname as 课程名称,
+sum(case when score >= 85 then 1 else 0 end) as '[100-85]',
+sum(case when score < 85 and score >= 70 then 1 else 0 end) as '[85-70]',
+sum(case when score < 70 and score >= 60 then 1 else 0 end) as '[70-60]',
+sum(case when score < 60 then 1 else 0 end) as '[ <60]'
+from sc, course
+where sc.cno = course.cno
+group by sc.cno, cname;
+
+
+--my answer
+SELECT sc.cno AS 课程ID,
+c.cname AS 课程名称,
+SUM(CASE WHEN score >= 85 THEN 1 ELSE 0 END) AS '[100-85]',
+SUM(CASE WHEN score < 85 AND score >= 70 THEN 1 ELSE 0 END) AS '[85-70]',
+SUM(CASE WHEN score < 70 AND score >= 60 THEN 1 ELSE 0 END) AS '[70-60]',
+SUM(CASE WHEN score < 60 THEN 1 ELSE 0 END) AS '[ <60]'
+FROM sc, course AS c
+WHERE sc.cno = c.cno
+GROUP BY sc.cno;
+
+
+------------------------------------------------------------------
+--24、查询学生平均分及其名次；
+--思路：用两个相同的表进行对比，以计算名次
+--given answer
+SELECT 1+(SELECT COUNT(DISTINCT 平均成绩)
+  FROM (SELECT sno, AVG(score) AS 平均成绩 FROM sc GROUP BY sno) AS T1
+      WHERE T1.平均成绩 > T2.平均成绩) AS 名次,
+sno AS 学生学号, T2.平均成绩 AS 平均成绩
+FROM (SELECT sno, AVG(score) AS 平均成绩 FROM sc GROUP BY sno) AS T2
+ORDER BY 平均成绩 desc;
+
+
+--my answer，这题没做出来，仿照正确答案写了自己的答案
+SELECT 1+(SELECT COUNT(DISTINCT 平均成绩)
+  FROM (SELECT sno, AVG(score) AS 平均成绩 FROM sc GROUP BY sno) AS T1
+      WHERE T1.平均成绩 > T2.平均成绩) AS 名次,
+sno AS 学生学号, T2.平均成绩 AS 平均成绩
+FROM (SELECT sno, AVG(score) AS 平均成绩 FROM sc GROUP BY sno) AS T2
+ORDER BY 平均成绩 desc;
+
+
+------------------------------------------------------------------
+--25、查询各科成绩前三名的记录:(不考虑成绩并列情况)；
+--思路：WHERE子句，是对 “每一行” 分别进行计算，如果不符合条件则过滤掉
+--given answer
+SELECT a.cno, a.sno, a.score
+FROM sc AS a
+WHERE (SELECT COUNT(cno) FROM sc WHERE cno = a.cno AND a.score < score) <= 2
+ORDER BY a.cno ASC, a.score DESC;
+
+
+--my answer，这题没做出来，仿照正确答案写了自己的答案
+SELECT a.cno, a.sno, a.score
+FROM sc AS a
+WHERE (SELECT COUNT(cno) FROM sc WHERE cno = a.cno AND a.score < score) <= 2
+ORDER BY a.cno ASC, a.score DESC;
+
+
+
+
+
+--26、查询每门课程被选修的学生数；
+--思路：简单的分组
+--given answer
+ select cno,count(sno) from sc group by cno;
+
+
+--my answer
+SELECT cno, COUNT(cno) AS 学生数
+FROM sc
+GROUP BY cno;
+
+
+------------------------------------------------------------------
+--27、查查询出只选修了一门课程的全部学生的学号和姓名；
+--思路：联结 + 分组 + HAVING与WHERE的区别
+--given answer
+SELECT sc.sno, student.sname, count(cno) AS 选课数 
+FROM sc, student 
+WHERE sc.sno = student.sno
+GROUP BY sc.sno, student.sname
+HAVING count(cno) = 1;
+
+
+--my answer
+SELECT s.sno AS 学号, s.sname AS 姓名
+FROM sc, student AS s
+WHERE sc.sno = s.sno
+GROUP BY sc.sno
+HAVING COUNT(cno) = 1;
+
+
+------------------------------------------------------------------
+--28、查询男生、女生人数；
+--思路：CASE or COUNT
+--given answer
+select 
+(select count(1) from student where ssex = '男') 男生人数,
+(select count(1) from student where ssex = '女') 女生人数;
+
+
+--my answer
+SELECT
+SUM(CASE WHEN ssex = '男' THEN 1 ELSE 0 END) AS 男生人数,
+SUM(CASE WHEN ssex = '女' THEN 1 ELSE 0 END) AS 女生人数
+FROM student;
+
+
+------------------------------------------------------------------
+--29、查询姓“张”的学生名单；
+--思路：通配符
+--given answer
+SELECT sname FROM student WHERE sname like '张%';
+
+
+--my answer
+SELECT sname
+FROM student
+WHERE sname LIKE '张%';
+
+
+------------------------------------------------------------------
+--30、查询同名同性学生名单，并统计同名人数；
+--思路：分组
+--given answer
+select sname,count(*) from student group by sname having count(*)>1;
+
+
+--my answer
+SELECT sname, COUNT(sname)
+FROM student
+GROUP BY sname
+HAVING COUNT(sname) > 1;
+
+
+
+
+
+--31、1981年出生的学生名单(注：student表中sage列的类型是datetime)；
+--思路：对日期和时间处理函数的运用
+--given answer，网上给的答案是错误的
+
+
+--my answer
+SELECT sno, sname
+FROM student
+WHERE Year(sage) = 1981;
+
+
+------------------------------------------------------------------
+--32、查询每门课程的平均成绩，结果按平均成绩升序排列，平均成绩相同时，按课程号降序排列；
+--思路：
+--given answer
+select cno 课程号, avg(score) 平均分
+from sc group by cno order by 平均分 asc, cno desc;
+
+
+--my answer
+SELECT cno AS 课程号, AVG(score) AS 平均成绩
+FROM sc
+GROUP BY cno
+ORDER BY 平均成绩 ASC, cno DESC;
+
+
+------------------------------------------------------------------
+--33、查询平均成绩大于80的所有学生的学号、姓名和平均成绩；
+--思路：联结 + 分组 + HAVING
+--given answer
+select 
+s1.sno,
+s.sname,
+AVG(s1.score) as '平均成绩'
+from student s,sc s1
+where s.sno=s1.sno 
+group by s1.sno,s.sname
+having AVG(s1.score)>80;
+
+
+--my answer
+SELECT sc.sno AS 学号, s.sname AS 姓名, AVG(score) AS 平均成绩
+FROM sc, student AS s
+WHERE sc.sno = s.sno
+GROUP BY sc.sno, s.sno
+HAVING 平均成绩 > 80;
+
+
+------------------------------------------------------------------
+--34、查询 数据库 分数 低于60的学生姓名和分数；
+--思路：
+--given answer
+select c.sname, a.score
+from sc a, course b, student c
+where a.cno = b.cno and a.sno = c.sno
+ and b.cname = '数据库' and score < 60;
+
+
+--my answer
+SELECT s.sname AS 姓名, score AS 分数
+FROM sc, student AS s, course AS c
+WHERE sc.sno = s.sno
+AND sc.cno = c.cno
+AND c.cname = '数据库'
+AND score < 60;
+
+
+------------------------------------------------------------------
+--35、查询所有学生的选课情况；
+--思路：联结
+--given answer
+SELECT sc.sno 学号,sname 姓名,cname 课程, sc.cno 课号
+FROM sc,student,course 
+WHERE sc.sno=student.sno and sc.cno=course.cno
+ORDER BY sc.sno
+
+
+--my answer
+SELECT sc.sno AS 学生ID, s.sname AS 学生姓名, sc.cno AS 课程ID, c.cname AS 课程名
+FROM sc, student AS s, course AS c
+WHERE sc.sno = s.sno
+AND sc.cno = c.cno
+ORDER BY sc.sno;
+
+
+
+
+
+--36、查询成绩在70分以上的学生姓名、课程名称和分数；
+--思路：联结
+--given answer
+select 
+s.sname,
+c.cname,
+(s1.score) as '分数'
+from student s,sc s1,course c
+where s.sno=s1.sno  and c.cno=s1.cno and s1.score>70;
+
+
+--my answer
+SELECT s.sname AS 学生姓名, c.cname AS 课程名, sc.score AS 分数
+FROM sc, student AS s, course AS c
+WHERE sc.sno = s.sno
+AND sc.cno = c.cno
+AND score > 70;
+
+
+------------------------------------------------------------------
+--37、查询不及格的课程，并按课程号从大到小排列；
+--思路：联结 + 排序
+--given answer
+select 
+sc.cno
+,c.cname
+,sc.score
+from sc ,course c
+where sc.score<60 and c.cno=sc.cno
+order by sc.cno desc;
+
+
+--my answer
+SELECT sc.cno AS 课程号, s.sname AS 学生姓名, c.cname AS 课程名, sc.score AS 分数
+FROM sc, student AS s, course AS c
+WHERE sc.sno = s.sno
+AND sc.cno = c.cno
+AND score < 60
+ORDER BY sc.cno DESC;
+
+
+------------------------------------------------------------------
+--38、查询课程编号为3且课程成绩在80分以上的学生的学号和姓名；
+--思路：
+--given answer
+select sc.sno,student.sname from sc,student where sc.sno=student.sno and score>80 and cno=3;
+
+
+--my answer
+SELECT sc.sno, s.sname
+FROM sc, student AS s
+WHERE sc.sno = s.sno
+AND cno = 3
+AND score > 80;
+
+
+------------------------------------------------------------------
+--39、求选了课程的学生人数；
+--思路：DISTINCT 的用法
+--given answer
+select count(distinct sno) from sc;
+
+
+--my answer
+SELECT COUNT(DISTINCT sno) AS 人数
+FROM sc;
+
+
+------------------------------------------------------------------
+--40、查询选修“叶平”老师所授课程的学生中，成绩最高的学生姓名及其成绩；
+--思路：LIMIT 1 选取最大值
+--given answer
+select student.sname,cname, score 
+from student,sc,course C,teacher 
+where student.sno=sc.sno and sc.cno=C.cno and C.tno=teacher.tno
+and teacher.tname ='叶平'
+and sc.score=(select max(score) from sc where cno = C.cno);
+
+
+--my answer
+SELECT s.sname AS 学生姓名, c.cname AS 课程, sc.score AS 成绩
+FROM sc, student s, course c, teacher t
+WHERE sc.sno = s.sno
+AND sc.cno = c.cno
+AND c.tno = t.tno
+AND t.tname = '叶平'
+ORDER BY score DESC
+LIMIT 1;
+
+
+
+
+
+--41、查询各个课程及相应的选修人数；
+--思路：联结 + 分组
+--given answer
+select cno 课程号, count(1) 选修人数 from sc group by cno;
+
+
+--my answer
+SELECT sc.cno 课程号, c.cname 课程名称, COUNT(sno) 选修人数
+FROM sc, course c
+WHERE sc.cno = c.cno
+GROUP BY sc.cno, c.cno;
+
+
+------------------------------------------------------------------
+--42、查询不同课程成绩相同的学生的学号、课程号、学生成绩；
+--思路：表与复制表进行比较
+--given answer
+select distinct A.sno, A.cno,B.score
+from sc A ,sc B
+where A.Score=B.Score and A.cno <>B.cno
+order by B.score;
+
+
+--my answer
+SELECT sc.sno, sc.cno, sc.score
+FROM sc, sc s
+WHERE sc.score = s.score
+AND sc.sno != s.sno
+AND sc.cno != s.cno;
+
+
+
+
+------------------------------------------------------------------
+--43、查询每门课程成绩最好的前两名的学生ID；
+--思路：表与复制表进行比较，以得到名次，同24、25题
+--given answer，网上的答案是MS SQL，不支持MySQL
+
+
+--my answer
+SELECT a.cno, a.sno, a.score
+FROM sc AS a
+WHERE (SELECT COUNT(cno) FROM sc WHERE cno = a.cno AND a.score < score) <= 1
+ORDER BY a.cno ASC, a.score DESC;
+
+
+------------------------------------------------------------------
+--44、统计每门课程的学生选修人数(至少有2人选修的课程才统计)。要求输出课程号和选修人数，
+--查询结果按人数降序排列，若人数相同，按课程号升序排列；
+--思路：GROUP BY + HAVING + ORDER BY
+--given answer
+select cno as 课程号,count(1) as 人数 
+from sc 
+group by cno having count(1) > 1
+order by count(1) desc,cno;
+
+
+--my answer
+SELECT cno, COUNT(cno)
+FROM sc
+GROUP BY cno
+HAVING COUNT(cno) >= 2
+ORDER BY COUNT(cno) DESC, cno ASC;
+
+
+------------------------------------------------------------------
+--45、检索至少选修了5门课程的学生学号；
+--思路：GROUP BY + HAVING
+--given answer
+select sno from sc group by sno having count(1) >= 5;
+
+
+--my answer
+SELECT sno
+FROM sc
+GROUP BY sno
+HAVING COUNT(cno) >= 5;
+
+
+
+
+
+--46、查询全部学生都选修的课程的课程号和课程名；
+--思路：GROUP BY + HAVING
+--given answer
+select course.cno, cname
+from sc, course
+where sc.cno = course.cno
+group by course.cno, cname
+having count(sc.cno) = (select count(1) from student);
+
+
+--my answer
+SELECT c.cno, c.cname
+FROM sc, course c
+WHERE sc.cno = c.cno
+GROUP BY sc.cno
+HAVING COUNT(sno) = (SELECT COUNT(*) FROM student);
+
+
+------------------------------------------------------------------
+--47、查询没学过“叶平”老师讲授的任一门课程的学生姓名；
+--思路：反向思维，找出选修过'叶平'老师课程的学生
+--given answer
+select sno, sname from student
+where sno not in(
+    select sno from sc where cno in
+    (select a.cno from course a, teacher b where a.tno = b.tno and b.tname = '叶平'));
+
+
+--my answer
+SELECT s.sno, s.sname
+FROM student s
+WHERE s.sno NOT IN (SELECT s.sno
+FROM sc, student s, course c, teacher t
+WHERE sc.sno = s.sno
+AND sc.cno = c.cno
+AND c.tno = t.tno
+AND t.tname = '叶平');
+
+
+------------------------------------------------------------------
+--48、查询两门以上不及格课程的同学的学号及其平均成绩；
+--思路：先WHERE过滤再GROUP BY or CASE WHEN THEN ELSE END
+--given answer
+select sno 学号, avg(score) 平均分, count(1) 不及格课程数
+from sc where score < 60 group by sno having count(1) > 2;
+
+
+--my answer
+SELECT sno 学号, AVG(score) 平均分, SUM(CASE WHEN score < 60 THEN 1 ELSE 0 END) 不及格课程数
+FROM sc
+GROUP BY sno
+HAVING SUM(CASE WHEN score < 60 THEN 1 ELSE 0 END) > 2;
+
+
+------------------------------------------------------------------
+--49、检索4号课程分数大于60的同学学号，按分数降序排列；
+--思路：WHERE + ORDER BY
+--given answer
+select sno, score from sc where cno = 4 and score > 60 order by score desc;
+
+
+--my answer
+SELECT sno, score
+FROM sc
+WHERE cno = 4
+AND score > 60
+ORDER BY score DESC;
+
+
+------------------------------------------------------------------
+--50、删除2号同学的课程1的成绩；
+--思路：DELETE
+--given answer
+delete from sc where sno = 2 and cno = 1;
+
+
+--my answer
+DELETE FROM sc
+WHERE sno = 2
+AND cno = 1;
+
+
+
+
+
+
+
+
+--xx.查询成绩最好的课程；
+--思路：
+--given answer
+
+
+
+
+--my answer
+SELECT sc.cno 课程号, c.cname 课程名称, AVG(score) 平均分
+FROM sc, course c
+WHERE sc.cno = c.cno
+GROUP BY sc.cno
+ORDER BY AVG(score) DESC
+LIMIT 1;
+
+
+------------------------------------------------------------------
+--xx.查询最受欢迎的老师(选修学生最多的老师)；
+--思路：
+--given answer
+
+
+
+
+--my answer
+SELECT t.tname 老师, c.cname 课程名, COUNT(sno) 选课人数
+FROM sc, course c, teacher t
+WHERE sc.cno = c.cno
+AND c.tno = t.tno
+GROUP BY sc.cno
+ORDER BY COUNT(sno) DESC
+LIMIT 1;
+
+
+------------------------------------------------------------------
+--xx.查询教学质量最好的老师；
+--思路：
+--given answer
+
+
+
+
+--my answer
+SELECT t.tname 老师, c.cname 课程名称, AVG(score) 平均分
+FROM sc, course c, teacher t
+WHERE sc.cno = c.cno
+AND c.tno = t.tno
+GROUP BY sc.cno
+ORDER BY AVG(score) DESC
+LIMIT 1;
+
+
+------------------------------------------------------------------
+--xx.查询需要补考的各科学生清单；
+--思路：
+--given answer
+
+
+
+
+--my answer
+SELECT c.cname 课程, s.sno 学生ID, s.sname 学生名, score 成绩
+FROM sc, course c, student s
+WHERE sc.cno = c.cno
+AND sc.sno = s.sno
+AND score < 60
+ORDER BY 课程, 学生ID;
+
+
+
+
+
+
+
+
+多表查询:
+
+交叉查询 select * from A,B
+内连接
+隐式内连接
+显示内连接
+外连接
+左外连接
+右外连接
+
+交叉查询(笛卡儿积)
+select * from A,B
+
+SELECT * FROM category,products;
+
+内连接 通过主外键的相同查询结果
+隐式内连接
+
+SELECT * FROM category,products WHERE category.cid = products.category_id;
+
+显示内连接 
+A inner join  B on 条件
+
+SELECT * FROM category INNER JOIN products ON category.cid = products.category_id;
+
+
+
+别名查询
+
+SELECT * FROM category c,products p WHERE c.cid = p.category_id;
+SELECT * FROM category c INNER JOIN products p ON c.cid = p.category_id;
+/*
+查询所有化妆品的记录 
+*
+SELECT * FROM category c ,products p WHERE c.cid = p.category_id AND c.cid='c003';
+SELECT * FROM category c INNER JOIN products p ON c.cid = p.category_id WHERE  c.cid = 'c003';
+/*
+外连接
+左外连接 A left join B on 条件 以左表为基准 左表有的数据 必须全部显示
+右外连接 A right join B on 条件  = B left joni A on条件
+
+
+SELECT * FROM category c LEFT JOIN products p ON c.cid = p.category_id;
+SELECT * FROM products p LEFT JOIN category c ON c.cid = p.category_id;
+
+子查询 
+一条查询语句可以作为另一条查询语句的条件
+查询所有化妆品的记录
+
+SELECT * FROM products WHERE category_id ='c003';
+SELECT cid FROM category WHERE cname = '化妆品';
+
+
+SELECT * FROM products WHERE category_id = (SELECT cid FROM category WHERE cname = '化妆品');
+
+
+
+使用子查询 查询所有化妆品和服装的记录
+
+
+
+SELECT * FROM products WHERE category_id  IN
+(SELECT cid FROM category WHERE cname = '化妆品' OR cname ='服饰');
+
+多表查询查询所有化妆品的记录
+
+SELECT * FROM category c,products p WHERE c.cid = p.category_id AND cname = '化妆品';
+
+
+
+子查询临时表
+
+SELECT * FROM 
+(SELECT * FROM category WHERE cname = '化妆品' ) c,products p WHERE c.cid = p.category_id;
+
+
+
+
+
+
+
+刘德华可以演什么角色 有什么权限
+
+SELECT * FROM users u LEFT JOIN usr_rol ur ON u.uid = ur.uid
+LEFT JOIN roles r ON ur.rid  = r.rid 
+LEFT JOIN rol_pri rp ON r.rid = rp.rid 
+LEFT JOIN privilege p ON rp.pid = p.pid  WHERE u.username = '刘德华';
+
+
+
+
+
+
