@@ -1,2 +1,30 @@
 /*1.用到了求和函数，2.这样就需要给求和值加上新的字段别名用as，3.用group by进行分组，4.用order by进行排序*/
 select field_name , SUM(another_field_name) as alias_name from table_name gruop by field_name order by field_name asc|desc; 
+========================================================================================================================
+MySQL 的两个特殊属性 unsigned与 zerofill
+1 unsigned
+unsigned 就是将数字类型无符号化， 例如 int 型的范围：-2^31 ~ 2^31 - 1，而unsigned int的范围：0 ~ 2^32。看起来unsigned 是个不错的类型，尤其是用在自增或者没有负数的情况。但是在实际使用中会出现一些意外的情况。
+create table t_test1(a int unsigned,b int unsigned);
+insert into t_test1 values(1，2)；
+select a-b form t_test1;
+报错信息：[ERR]1690 - BIGINT UNSIGNED VALUE is out of range in ('test'.'t_test1'.'a'-'test'.'t_test1'.'b')
+我们新建了一个测试表，两个字段均为unsigned int型，插入两个值，然后做减法运算时报错，并不是我们想要的结果，正常情况 1-2=-1，但是当数据类型为unsigned时，MySQL 运算的结果也是unsigned，而 -1 已经超出了unsigned 范围，所以会报错。
+如何解决这个问题呢，设置一下sql_mode就可以解决这个问题
+　　set sql_mode = 'NO_UNSIGNED_SUBTRACTION';
+ sql_mode 的设置是有风险的，因为可以通过这个设置允许一些非法的操作。如将 null 值插入not null字段，将非法的日期2017-12-32插入到日期字段。一般在生产环境都都设置为严格模式。所以在不熟悉MySQL底层机制或者不了解 unsigned 原理时，慎用它。
+
+2 zerofill
+zerofill 类似一个显示属性，首先来看看MySQL数据库中数字类型后面的长度是什么意思呢，使用show create table 命令来看表的建表语句。
+可以看到 int(10) ，这代表什么意思呢？整型不就是4个字节，这个10代表什么意思，如果没有zerofill这属性，括号类的数字没有意义。
+　　然后我们修改列，对其添加zerofill属性
+
+　　alter table t_test1 change column a a int(4) unsigned zerofill;
+  a 字段前面增加了3个0，这是为什么，因为zerofill属性起作用了，当插入mysql中该字段的值的长度小于定义的长度时，会在数值前面补全相应数据的0。
+
+补充：
+1.修改某个表的字段类型及指定为空或非空
+>alter table 表名称 change 字段名称 字段名称 字段类型 [是否允许非空];
+>alter table 表名称 modify 字段名称 字段类型 [是否允许非空];
+
+2.修改某个表的字段名称及指定为空或非空
+>alter table 表名称 change 字段原名称 字段新名称 字段类型 [是否允许非空];
