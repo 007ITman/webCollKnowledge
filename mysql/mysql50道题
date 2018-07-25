@@ -49,7 +49,7 @@ insert into course(cno,cname,tno) values(5,'物理',8);
 
 =====================================================================
 create table sc(
-	sno int not null,--分数番号
+	sno int not null,--学生番号
 	cno int not null,--课程番号
 	score int not null--分数
 	)engine=innodb default charset=utf8 comment="成绩表";
