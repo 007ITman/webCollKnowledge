@@ -154,4 +154,16 @@ select @@datadir 查找数据存储目录
 
 -- 3、查询所有同学的学号、姓名、选课数、总成绩；
 select sno,sname from sc,student where sc.sno = student.sno unionall select count（cno）as counum, sum（score）as toalsc from sc gruop by sno;
+******此题是参考答案作出来的**************
+正确答案：select sc.sno, student.sname, count(sc.cno) as countCo,sum(sc.score) as totalSc from sc,student where sc.sno = student.sno group by sno;
+一个不能理解的意外现象：select sc.sno, student.sname, count(sc.cno) as countCo,sum(sc.score) as totalSc from sc,student where sc.sno = student.sno；
+这个现象是只出现了一条sno为1其他字段计算的所有值的表的显示。
+
+==============================================================================
+
+
+
+
+
+
 
