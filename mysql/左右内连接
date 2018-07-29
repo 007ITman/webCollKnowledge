@@ -1,0 +1,101 @@
+代码如下:
+create table user_id ( id decimal(18) );
+create table user_profile ( id decimal(18) , name varchar(255) ) ;
+insert into user_id values (1);
+insert into user_id values (2);
+insert into user_id values (3);
+insert into user_id values (4);
+insert into user_id values (5);
+insert into user_id values (6);
+insert into user_id values (1);
+
+insert into user_profile values (1, "aa");
+insert into user_profile values (2, "bb");
+insert into user_profile values (3, "cc");
+insert into user_profile values (4, "dd");
+insert into user_profile values (5, "ee");
+insert into user_profile values (5, "EE");
+insert into user_profile values (8, 'zz');
+
+一、左连接：
+代码如下:
+mysql> select a.id id , ifnull(b.name, 'N/A') name from user_id a left join user_profile b on a.id = b.id;
+mysql> select a.id id , ifnull(b.name, 'N/A') name from user_id a left join user_profile b on a.id = b.id;   
++------+------+
+| id   | name |
++------+------+
+|    1 | aa   |
+|    2 | bb   |
+|    3 | cc   |
+|    4 | dd   |
+|    5 | ee   |
+|    5 | EE   |
+|    6 | N/A  |
+|    1 | aa   |
++------+------+
+8 rows in set (0.00 sec)
+
+user_id居左，故谓之左连接。 这种情况下，以user_id为主，即user_id中的所有记录均会被列出。分以下三种情况：
+
+1. 对于user_id中的每一条记录对应的id如果在user_profile中也恰好存在而且刚好只有一条，那么就会在返回的结果中形成一条新的记录。如上面1, 2, 3, 4对应的情况。
+2. 对于user_id中的每一条记录对应的id如果在user_profile中也恰好存在而且有N条，那么就会在返回的结果中形成N条新的记录。如上面的5对应的情况。
+3. 对于user_id中的每一条记录对应的id如果在user_profile中不存在，那么就会在返回的结果中形成一条条新的记录，且该记录的右边全部NULL。如上面的6对应的情况。
+
+不符合上面三条规则的记录不会被列出。
+
+比如， 要查询在一个相关的表中不存在的数据， 通过id关联，要查出user_id表中存在user_profile中不存在的记录：
+代码如下:
+select count(*) from user_id left join user_profile on user_id.id = user_profile.id where user_profile.id is null;
+
+二. 右连接
+
+user_profile居右，故谓之右连接。 这种情况下， 以user_profile为主，即user_profile的所有记录均会被列出。分以下三种情况：
+
+1. 对于user_profile中的每一条记录对应的id如果在user_id中也恰好存在而且刚好只有一条，那么就会在返回的结果中形成一条新的记录。如上面2, 3, 4, 5对应的情况。
+2. 对于user_profile中的每一条记录对应的id如果在user_id中也恰好存在而且有N条，那么就会在返回的结果中形成N条新的记录。如上面的1对应的情况。
+3. 对于user_profile中的每一条记录对应的id如果user_id中不存在，那么就会在返回的结果中形成一条条新的记录，且该记录的左边全部NULL。如上面的8对应的情况。
+
+不符合上面三条规则的记录不会被列出。
+
+三. 内连接
+
+MySQL内连接的数据记录中，不会存在字段为NULL的情况。可以简单地认为，内链接的结果就是在左连接或者右连接的结果中剔除存在字段为NULL的记录后所得到的结果， 另外，MySQL不支持full join
+mysql> select *  from user_id a inner join user_profile b on a.id = b.id;
++------+------+------+
+| id   | id   | name |
++------+------+------+
+|    1 |    1 | aa   |
+|    1 |    1 | aa   |
+|    2 |    2 | bb   |
+|    3 |    3 | cc   |
+|    4 |    4 | dd   |
+|    5 |    5 | ee   |
+|    5 |    5 | EE   |
++------+------+------+
+7 rows in set (0.00 sec)
+mysql> select * from user_id a, user_profile b where a.id = b.id;                   
++------+------+------+
+| id   | id   | name |
++------+------+------+
+|    1 |    1 | aa   |
+|    1 |    1 | aa   |
+|    2 |    2 | bb   |
+|    3 |    3 | cc   |
+|    4 |    4 | dd   |
+|    5 |    5 | ee   |
+|    5 |    5 | EE   |
++------+------+------+
+7 rows in set (0.00 sec)
+mysql> select *  from user_id a join user_profile b on a.id = b.id;    
++------+------+------+
+| id   | id   | name |
++------+------+------+
+|    1 |    1 | aa   |
+|    1 |    1 | aa   |
+|    2 |    2 | bb   |
+|    3 |    3 | cc   |
+|    4 |    4 | dd   |
+|    5 |    5 | ee   |
+|    5 |    5 | EE   |
++------+------+------+
+7 rows in set (0.00 sec)
