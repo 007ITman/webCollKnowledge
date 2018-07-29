@@ -164,7 +164,8 @@ select sno,sname from sc,student where sc.sno = student.sno unionall select coun
 select count(tname) from teacher where tname like '李%';
 这里like后面的模糊查询数值必须用引号引起。李%，%李%，%李，_李_
 
-
-
+参考答案：SELECT COUNT(DISTINCT(tname)) FROM teacher WHERE tname LIKE '李%';对tname进行了除重
+==============================================================================
+-- 5、查询没学过“叶平”老师课的同学的学号、姓名；
 
 
