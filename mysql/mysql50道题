@@ -160,8 +160,9 @@ select sno,sname from sc,student where sc.sno = student.sno unionall select coun
 这个现象是只出现了一条sno为1其他字段计算的所有值的表的显示。
 
 ==============================================================================
-
-
+-- 4、查询姓“李”的老师的个数
+select count(tname) from teacher where tname like '李%';
+这里like后面的模糊查询数值必须用引号引起。李%，%李%，%李，_李_
 
 
 
