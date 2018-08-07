@@ -1,0 +1,4 @@
+在书写代码中发现，分页的设置PageHelper.startPage(pageNum, pageSize);写在执行sql语句之前，然后在你执行sql语句的同时，分页插件会重新配置你的sql语句
+修改成包含limit的限定sql语句（个人猜测底层原理）
+*说明在查询的是进行的分页查询
+
