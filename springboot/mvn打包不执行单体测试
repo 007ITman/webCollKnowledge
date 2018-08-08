@@ -1,0 +1,11 @@
+说明
+有些项目的测试用例执行很慢，为了打包速度，（非正式发布时）希望不执行测试用例。
+
+方法
+在mvn命令中添加-DskipTests或-Dmaven.test.skip=true即可。
+
+比如： mvn clean package -DskipTests     或者 mvn clean package -Dmaven.test.skip=true。
+
+区别
+-DskipTests，不执行测试用例，但编译测试用例类生成相应的class文件至target/test-classes下。
+-Dmaven.test.skip=true，不执行测试用例，也不编译测试用例类。
