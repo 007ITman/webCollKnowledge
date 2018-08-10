@@ -10,7 +10,7 @@ docker 轻量级容器
 mysql/oracle
 shell/batch 脚本语言
 linux服务器的相关配置/在服务器上启动jar（java -jar jar包名） ----重点
-swaggerUI接口开发技术
+swaggerUI接口开发技术（辅助开发工具，相应的了解一下就行，不需要花费太多的时间，用到复杂的地方在研究）
 ================  web前端知识  =====================
 html
 css
