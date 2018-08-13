@@ -1,0 +1,167 @@
+java集合的工具类Collections中提供了两种排序的方法,分别是:
+
+Collections.sort(List list)
+Collections.sort(List list,Comparator c)
+
+第一种称为自然排序,参与排序的对象需实现comparable接口,重写其compareTo()方法,方法体中实现对象的比较大小规则,示例如下: 
+实体类:(基本属性,getter/setter方法,有参无参构造方法,toString方法)
+package test;
+
+public class Emp implements Comparable {
+
+    private String name;
+    private int age;
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public int getAge() {
+        return age;
+    }
+    public void setAge(int age) {
+        this.age = age;
+    }
+    public Emp() {
+        super();
+    }
+    public Emp(String name, int age) {
+        super();
+        this.name = name;
+        this.age = age;
+    }
+    @Override
+    public String toString() {
+        return "Emp [name=" + name + ", age=" + age + "]";
+    }
+    @Override
+    public int compareTo(Object o) {
+        if(o instanceof Emp){
+            Emp emp = (Emp) o;
+//          return this.age-emp.getAge();//按照年龄升序排序
+            return this.name.compareTo(emp.getName());//换姓名升序排序
+        }
+        throw new ClassCastException("不能转换为Emp类型的对象...");
+    }
+
+}
+
+第二种叫定制排序,或自定义排序,需编写匿名内部类,先new一个Comparator接口的比较器对象c,同时实现compare()其方法; 
+然后将比较器对象c传给Collections.sort()方法的参数列表中,实现排序功能;
+
+说明:第一种方法不够灵活,实体类实现了comparable接口后,会增加耦合,如果在项目中不同的位置需要根据不同的属性调用排序方法时,需要反复修改比较规则(按name还是按age),二者只能选择其一,会起冲突.第二种就很好地解决了这个问题.在需要的地方,创建个内部类的实例,重写其比较方法即可.
+
+jUnit4单元测试类代码如下:
+package test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+public class TestSort {
+
+    static List list = new ArrayList();
+    //@BeforeClass注解标注的方法会在其它测试方法执行之前先执行,
+    //且只执行一次.@Before注解标注的方法会在每个测试方法之前执行;
+    //此处初始化集合只需要一次,因此使用@BeforeClass.
+    @BeforeClass
+    public static void init(){
+        list.add(new Emp("tom",18));
+        list.add(new Emp("jack",20));
+        list.add(new Emp("rose",15));
+        list.add(new Emp("jerry",17));
+        System.out.println("排序前:");
+        for(Object o : list){
+            System.out.println(o);
+        }
+    }
+
+    /**按age升序排序*/
+//  @Test
+//  public void testSortAge(){
+//      Collections.sort(list);
+//      System.out.println("自然排序按age排序后:");
+//      for(Object o : list){
+//          System.out.println(o);
+//      }
+//  }
+//  
+    /**按name升序排序*/
+    @Test
+    public void testSortName(){
+        Collections.sort(list);
+        System.out.println("自然排序按name升序排序后:");
+        for(Object o : list){
+            System.out.println(o);
+        }
+    }
+
+    /**使用Comparator比较器按age升序排序*/
+    @Test
+    public void testComparatorSortAge(){
+        Collections.sort(list,new Comparator () {
+            @Override
+            public int compare(Object o1, Object o2) {
+                if(o1 instanceof Emp && o2 instanceof Emp){
+                    Emp e1 = (Emp) o1;
+                    Emp e2 = (Emp) o2;
+                    return e1.getAge() - e2.getAge();
+                }
+                throw new ClassCastException("不能转换为Emp类型");
+            }
+        });
+        System.out.println("使用Comparator比较器按age升序排序后:");
+        for(Object o : list){
+            System.out.println(o);
+        }
+    }
+    /**使用Comparator比较器按name升序排序*/
+    @Test
+    public void testComparatorSortName(){
+        Collections.sort(list,new Comparator () {
+            @Override
+            public int compare(Object o1, Object o2) {
+                if(o1 instanceof Emp && o2 instanceof Emp){
+                    Emp e1 = (Emp) o1;
+                    Emp e2 = (Emp) o2;
+                    return e1.getName().compareTo(e2.getName());
+                }
+                throw new ClassCastException("不能转换为Emp类型");
+            }
+        });
+        System.out.println("使用Comparator比较器按name升序排序后:");
+        for(Object o : list){
+            System.out.println(o);
+        }
+    }
+
+}
+
+右键空白位置 —> Run As —> JUnit Test —> 
+运行结果如下:
+
+排序前:
+Emp [name=tom, age=18]
+Emp [name=jack, age=20]
+Emp [name=rose, age=15]
+Emp [name=jerry, age=17]
+自然排序按name升序排序后:
+Emp [name=jack, age=20]
+Emp [name=jerry, age=17]
+Emp [name=rose, age=15]
+Emp [name=tom, age=18]
+使用Comparator比较器按age升序排序后:
+Emp [name=rose, age=15]
+Emp [name=jerry, age=17]
+Emp [name=tom, age=18]
+Emp [name=jack, age=20]
+使用Comparator比较器按name升序排序后:
+Emp [name=jack, age=20]
+Emp [name=jerry, age=17]
+Emp [name=rose, age=15]
+Emp [name=tom, age=18]
