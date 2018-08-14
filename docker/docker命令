@@ -1,2 +1,2 @@
 docker ps -a 查看所有容器名
-docker exec -it 容器名 /bin/bash/ 进入到指定容器
+docker exec -it 容器名 /bin/bash 进入到指定容器
