@@ -41,3 +41,9 @@ ctrl+a n ：下一个窗口
 ctrl+a p ：上一个窗口
 ctrl+a 0-9 ：在第0个窗口和第9个窗口之间切换
 就这么多了，希望能给大家带来一些帮助！
+
+1、使用screen名字，kill掉。
+      screen -S session_name -X quit
+2、激活screen：
+     screen -r session_name
+     并利用exit退出并kiil掉session。
