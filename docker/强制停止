@@ -1,0 +1,40 @@
+注：博主系统是ubuntu。
+
+问题：mysql容器如法停止，无法删除，也无法连接。docker stop,docker kill等命令都无效。
+
+处理办法：
+
+
+
+1.停止所有的容器
+
+docker stop $(docker ps -q)
+
+
+2.强制移除此容器
+
+docker rm -f mysql1
+
+
+
+3.清理此容器的网络占用
+
+格式：docker network disconnect --force 网络模式 容器名称
+
+示例：docker network disconnect --force bridge mysql1
+
+
+4.简查是否还有同名容器占用
+
+格式：docker network inspect 网络模式
+示例：docker network inspect bridge
+
+
+
+5.重新构建容器
+
+docker run --name mysql1 -d -p3306:3306 -e MYSQL_ROOT_PASSWORD=123456 mysql:latest
+
+
+
+对于其他类型的容器，也适用。
