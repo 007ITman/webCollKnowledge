@@ -1,0 +1,7 @@
+MySQL中的field（）函数，可以用来对SQL中查询结果集进行指定顺序排序。
+
+函数使用格式如下：SELECT * FROM table_name ORDER BY FIELD(str , str1, str2, str3);
+
+order by （str，str1，str2，str3，str4……），str与str1，str2，str3，str4比较，其中str指的是字段名字，
+
+意为：字段str按照字符串str1，str2，str3，str4的顺序返回查询到的结果集。如果表中str字段值不存在于str1，str2，str3，str4中的记录，放在结果集最前面返回。
