@@ -1,0 +1,75 @@
+以前写controller层的时候都是默认带上 @RequestParam 的， 今天发现不加@RequestParam 也能接收到参数
+
+
+
+下面我们来区分一下加与不加的区别
+
+这里有两种写法
+
+
+
+@RequestMapping("/list")
+	public String test(@RequestParam  Long parentId) {
+		
+	}
+
+
+@RequestMapping("/list")
+	public String test( Long parentId) {
+		
+	}
+  
+  第一种必须带有参数,也就是说你直接输入localhost:8080/list 会报错 不会执行方法 只能输入localhost:8080/list?parentId=? 才能执行相应的方法
+第二种 可带参数也可不带参数  就是说你输入  localhost:8080/list  以及 localhost:8080/list?parentId=?  方法都能执行
+
+
+
+当然你也可以设置 @RequestParam 里面的required为false(默认为true 代表必须带参数) 这样就跟第二种是一样的了
+
+如下:
+
+@RequestMapping("/list")
+	public String test(@RequestParam(required=false)  Long parentId) {
+		.....
+	}
+
+
+当然你还可以设置里面的defaultValue的属性
+如下:
+
+@RequestMapping("/list")
+	public String test(@RequestParam(defaultValue="0")  Long parentId) {
+	...	
+	}
+	
+ 
+	
+这样在地址里面也可以不带参数，如果带了参数会接收，不带参数会默认为0
+
+
+里面还有一个value属性也讲一下， 前面所有的方法 传入的参数必须为parentId 才能接收到值
+
+但是如果你加了value属性
+
+@RequestMapping("/list")
+	public String test(@RequestParam(value="id")  Long parentId) {
+		..
+	}
+	
+ 
+
+这样会用id 代替parentId  也就是说你地址里面传入的参数名称为id　localhost:8080/list?id＝？
+
+==================================================
+springMVC中RequestParam注解中name和value两个属性的区别
+2018年03月06日 13:14:40 阅读数：2115更多
+个人分类： SpringMVC
+自SpringMVC4.2之后，RequestParam内部有4个参数：
+1、String name;
+2、String value;
+3、boolean required;
+4、String defaultValue;
+
+源码中name的别名是value，value的别名是name,
+
+所以说name和value两个属性基本是等价的,都是获取从前台传入的参数
