@@ -17,3 +17,8 @@ PS：顺便提一句，MD5和BCrypt加密算法都比较流行，相对来说，
 ---------------------
 
 本文来自 酷酷的糖先森 的CSDN 博客 ，全文地址请点击：https://blog.csdn.net/u014723529/article/details/77878490?utm_source=copy 
+
+
+
+加盐，md5加密的实现方法url：
+https://blog.csdn.net/dingsai88/article/details/51637977
