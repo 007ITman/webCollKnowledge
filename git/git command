@@ -1,0 +1,6 @@
+git init
+git add filename
+git rm -r --cached filename
+git commit filename -m "comment"
+
+git clone -b branchName url newProjectFileName 克隆特定分支
