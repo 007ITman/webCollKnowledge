@@ -8,3 +8,19 @@ git clone -b branchName url newProjectFileName 克隆特定分支
 问题：同一个文件先修改，放入暂存区，然后在修改，不放入暂存区，提交会出现的结果是什么？
 1.官网的回答是未放暂存区部分的内容不会被提交。
 2.实际操作的结果是这个文件的所有改修都被提交了上去
+
+
+git -a -m "commit message"
+
+git branch 
+git branch -r
+git branch -a
+
+rm -rf fileName
+
+git branch -m oldBranchName newBranchName
+
+git checkout -b remoteBranchName
+
+
+git reset commit-id
