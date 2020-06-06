@@ -1,0 +1,127 @@
+将本地项目、代码添加到github上
+
+前言
+github一个面向开源及私有软件项目的托管平台，是每个程序员必须要掌握的，本文对将本地项目或者代码添加到Github上步骤进行了整理，方便自己查阅，希望对小伙伴有所帮助！
+
+cmd-markdown-logo
+将本地项目添加到github上（方法一）
+1，在github上创建一个新仓库
+
+cmd-markdown-logo
+2，复制刚创建的项目git地址
+
+cmd-markdown-logo
+3，git init初始化
+
+相当于再项目的更目录生成一个 .git 文件
+
+cmd-markdown-logo
+4，git remote -v
+
+查看远程仓库的信息
+
+cmd-markdown-logo
+5，git remote add origin git地址
+
+在本地项目的根目录下输入，这个是将本地项目与远程的git仓库关联起来
+
+cmd-markdown-logo
+6，git add .
+
+将本地文件添加到文件缓冲区
+
+cmd-markdown-logo
+7，git commit -am "注释"
+
+引号里面的注释是你这次提交的什么内容做个注释，方便以后方便看
+
+cmd-markdown-logo
+8，git branch
+
+查看本地分支
+
+cmd-markdown-logo
+9，git pull origin master(这个是分支名)
+
+拉取远程master分支代码
+
+cmd-markdown-logo
+10，git push -u origin master(这个是分支名)
+
+将本地缓存仓库的文件推送到远程，也就是网上
+
+cmd-markdown-logo
+最后在Github上边看到的效果
+cmd-markdown-logo
+将本地项目添加到github上（方法二）
+1，在github上创建一个新仓库
+
+cmd-markdown-logo
+2，git clone
+
+本地克隆刚才创建的项目
+
+cmd-markdown-logo
+3，将本地的文件夹里面的所有内容拷贝到新克隆下来的文件夹中
+
+cmd-markdown-logo
+4，cd 到克隆下来的文件
+
+例：cd seller
+
+cmd-markdown-logo
+5，git add .
+
+是将本地文件添加到本地缓存区
+
+cmd-markdown-logo
+6，git commit -am “注释”
+
+引号里面的注释是你这次提交的什么内容做个注释，方便以后方便看
+
+cmd-markdown-logo
+7，git push -u origin master
+
+将本地缓存仓库的文件推送到远程，也就是网上
+
+cmd-markdown-logo
+最后在Github上边看到的效果
+cmd-markdown-logo
+将本地代码添加到github上
+github上有一个文件夹imoocmanager，我改了imoocmanager里面的代码，需要把增加的代码推到github上去，下边是我的几个步骤：
+
+1，git add .
+
+将本地文件添加到本地缓存区
+
+cmd-markdown-logo
+2，git commit -am “注释”
+
+引号里面的注释是你这次提交的什么内容做个注释，方便以后方便看
+
+cmd-markdown-logo
+3，git branch
+
+查看本地分支
+
+cmd-markdown-logo
+注意： 这个 "本地分支" 要和下边这个 "远程分支" 一样，才可以推
+
+4，git branch -r
+
+查看远程分支
+
+cmd-markdown-logo
+5，git pull origin master(这个是分支名)
+
+拉取远程master分支代码
+
+cmd-markdown-logo
+6，git push -u origin mater(这个是分支名)
+
+将本地缓存仓库的文件推送到远程，也就是网上
+
+cmd-markdown-logo
+最后效果
+
+cmd-markdown-logo
